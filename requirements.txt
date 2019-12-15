@@ -1,0 +1,7 @@
+azure-functions
+pymysql
+numpy
+scipy
+nltk
+gensim
+logging

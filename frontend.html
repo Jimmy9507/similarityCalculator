@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+	<title>Book Restaurants</title>
+	<script src="https://sdk.amazonaws.com/js/aws-sdk-2.41.0.min.js"></script>
+	<script src="https://code.jquery.com/jquery-latest.js"></script>
+	<style>
+	h3{
+
+		background-color: rgba(208, 208, 208, 0);
+		font-size:23px;line-height: 27px;
+		color:cornflowerblue;
+		font-weight:bold;
+		margin: 5px 0;}
+	.button {
+    background-color: #4CAF50; /* Green */
+    border: none;
+    color: white;
+    padding: 10px 25px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 12px;
+		border-radius: 4px;
+	}
+	table
+        {
+            border-collapse: collapse;
+            margin: 0 auto;
+            text-align: center;
+        }
+        table td, table th
+        {
+            border: 1px solid #cad9ea;
+            color: #000;
+            height: 30px;
+        }
+        table thead th
+        {
+            background-color: #CCE8EB;
+            width: 100px;
+        }
+        table tr:nth-child(odd)
+        {
+            background: #fff;
+        }
+        table tr:nth-child(even)
+        {
+            background: #F5FAFA;
+					}
+	</style>
+</head>
+
+
+
+<body>
+	 <h3 style="text-align:  left">Document Similarity Calculator</h3>
+	 <p style="width: 400px">
+		 <strong>
+		This program calculates the similarity of two documents.
+	</strong>
+	</p>
+
+ <!-- <div id="conversation" style="width: 400px; height: 400px; border: 1px solid #ccc; background-color: #eee; padding: 4px; overflow: scroll"></div>
+
+	<form id="chatform" style="margin-top: 10px" onsubmit="return pushChat();">
+
+		<input type="text" id="wisdom" size="80" value="" placeholder="I need a hotel room">
+
+	</form> -->
+	<textarea id="doc1" rows="40" cols="95"></textarea>
+	<input class="button" id= "bt1" type="submit" onclick="compareTwoDocuments()" value="compare"/>
+	<textarea id="doc2" rows="40" cols="95"></textarea>
+	<div style="position:absolute">
+		<table id="doc1Table" border="1">
+    <tr>
+        <th>document_id</th>
+        <th>word</th>
+				<th>type</th>
+				<th>word2vec</th>
+				<th>no_of_occurences</th>
+				<th>stemmed_word</th>
+    </tr>
+</table>
+<p> <strong>The Similarity is: <span id="resText"></span></strong></p>
+</div>
+<div style="position:absolute;margin-left:700px">
+<table id="doc2Table" border="1">
+    <tr>
+			<th>document_id</th>
+			<th>word</th>
+			<th>type</th>
+			<th>word2vec</th>
+			<th>no_of_occurences</th>
+			<th>stemmed_word</th>
+    </tr>
+</table>
+
+	</div>
+
+	<script type="text/javascript">
+
+		// set the focus to the input box
+
+		// document.getElementById("wisdom").focus();
+
+
+	 $.support.cors=true;
+	function compareTwoDocuments(wisdom) {
+		document.getElementById("bt1").disabled=true;
+			doc1=document.getElementById('doc1').value
+			doc2=document.getElementById('doc2').value
+					 $.ajax({
+							 type: "POST",
+							 url: 'http://localhost:7071/api/HttpTrigger',
+							 crossDomain:true,
+							 data:JSON.stringify({"doc1":doc1,"doc2":doc2}),
+							 contentType:'application/json',
+							 dataType:'json',
+							 success: function (res){
+								 	console.log(res)
+									 showResponse(res);
+									 document.getElementById("bt1").disabled=false;
+							 },
+							 error:function(err){
+								 showResponse('error')
+								 document.getElementById("bt1").disabled=false;
+							 },
+							 complete:function(res){
+								 document.getElementById("bt1").disabled=false;
+							 }
+
+					 });
+
+			 }
+	function showResponse(res){
+			try{
+		 resText=document.getElementById('resText')
+		 resText.innerText=res['similarity']
+		 doc1InfoList=JSON.parse(res['doc1InfoList'])
+		 doc2InfoList=JSON.parse(res['doc2InfoList'])
+		 doc1Table=document.getElementById('doc1Table')
+		 doc2Table=document.getElementById('doc2Table')
+		 for(i=0;i<doc1InfoList.length;i++){
+			 	 var tr=document.createElement('tr')
+				 var td0=document.createElement('td')
+				 var td1=document.createElement('td')
+				 var td2=document.createElement('td')
+				 var td3=document.createElement('td')
+				 var td4=document.createElement('td')
+				 var td5=document.createElement('td')
+			   var document_id=doc1InfoList[i][0]
+				 var word=doc1InfoList[i][1]
+				 var type=doc1InfoList[i][2]
+				 var word2vec=doc1InfoList[i][3]
+
+				 for(j=0;j<word2vec.length;j++)
+				 {
+					 word2vec[j]=word2vec[j].toFixed(3)
+				 }
+				 var no_of_occurences=doc1InfoList[i][4]
+				 var stemmed_word=doc1InfoList[i][5]
+				 td0.innerText=document_id
+				 td1.innerText=word
+				 td2.innerText=type
+				 td3.innerText=word2vec.slice(0,3).concat(['...'])
+				 td4.innerText=no_of_occurences
+				 td5.innerText=stemmed_word
+				 tr.appendChild(td0)
+				 tr.appendChild(td1)
+				 tr.appendChild(td2)
+				 tr.appendChild(td3)
+				 tr.appendChild(td4)
+				 tr.appendChild(td5)
+				 doc1Table.appendChild(tr)
+		 }
+		 for(i=0;i<doc2InfoList.length;i++){
+			 var tr=document.createElement('tr')
+			 var td0=document.createElement('td')
+			 var td1=document.createElement('td')
+			 var td2=document.createElement('td')
+			 var td3=document.createElement('td')
+			 var td4=document.createElement('td')
+			 var td5=document.createElement('td')
+			 var document_id=doc2InfoList[i][0]
+			 var word=doc2InfoList[i][1]
+			 var type=doc2InfoList[i][2]
+			 var word2vec=doc2InfoList[i][3]
+
+			 for(j=0;j<word2vec.length;j++)
+			 {
+				 word2vec[j]=word2vec[j].toFixed(3)
+			 }
+			 var no_of_occurences=doc2InfoList[i][4]
+			 var stemmed_word=doc2InfoList[i][5]
+			 td0.innerText=document_id
+			 td1.innerText=word
+			 td2.innerText=type
+			 td3.innerText=word2vec.slice(0,3).concat(['...'])
+			 td4.innerText=no_of_occurences
+			 td5.innerText=stemmed_word
+			 tr.appendChild(td0)
+			 tr.appendChild(td1)
+			 tr.appendChild(td2)
+			 tr.appendChild(td3)
+			 tr.appendChild(td4)
+			 tr.appendChild(td5)
+			 doc2Table.appendChild(tr)
+		 }
+	 }
+	 catch(e){
+		 console.log(e)
+		 document.getElementById("bt1").disabled=false;
+	 }
+	}
+
+	</script>
+
+</body>
+</html>
